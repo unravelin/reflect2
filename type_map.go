@@ -1,3 +1,4 @@
+//go:build !gccgo
 // +build !gccgo
 
 package reflect2
@@ -9,14 +10,20 @@ import (
 )
 
 // typelinks2 for 1.7 ~
+//
 //go:linkname typelinks2 reflect.typelinks
 func typelinks2() (sections []unsafe.Pointer, offset [][]int32)
+
+//go:linkname resolveTypeOff reflect.resolveTypeOff
+func resolveTypeOff(rtype unsafe.Pointer, off int32) unsafe.Pointer
 
 // initOnce guards initialization of types and packages
 var initOnce sync.Once
 
-var types map[string]reflect.Type
-var packages map[string]map[string]reflect.Type
+var (
+	types    map[string]reflect.Type
+	packages map[string]map[string]reflect.Type
+)
 
 // discoverTypes initializes types and packages
 func discoverTypes() {

@@ -57,8 +57,11 @@ func (type2 *UnsafeMapType) MakeMap(cap int) interface{} {
 	return packEFace(type2.ptrRType, type2.UnsafeMakeMap(cap))
 }
 
+//go:linkname makemap reflect.makemap
+func makemap(rtype unsafe.Pointer, cap int) (m unsafe.Pointer)
+
 func (type2 *UnsafeMapType) UnsafeMakeMap(cap int) unsafe.Pointer {
-	m := makeMapWithSize(type2.rtype, cap)
+	m := makemap(type2.rtype, cap)
 	return unsafe.Pointer(&m)
 }
 
@@ -108,7 +111,7 @@ func (type2 *UnsafeMapType) Iterate(obj interface{}) MapIterator {
 }
 
 type UnsafeMapIterator struct {
-	*hiter
+	hiter
 	pKeyRType  unsafe.Pointer
 	pElemRType unsafe.Pointer
 }
@@ -125,6 +128,22 @@ func (iter *UnsafeMapIterator) Next() (interface{}, interface{}) {
 func (iter *UnsafeMapIterator) UnsafeNext() (unsafe.Pointer, unsafe.Pointer) {
 	key := iter.key
 	elem := iter.value
-	mapiternext(iter.hiter)
+	mapiternext(&iter.hiter)
 	return key, elem
+}
+
+// m escapes into the return value, but the caller of mapiterinit
+// doesn't let the return value escape.
+//
+//go:noescape
+//go:linkname mapiterinit reflect.mapiterinit
+func mapiterinit(rtype unsafe.Pointer, m unsafe.Pointer, it *hiter)
+
+func (type2 *UnsafeMapType) UnsafeIterate(obj unsafe.Pointer) MapIterator {
+	mi := &UnsafeMapIterator{
+		pKeyRType:  type2.pKeyRType,
+		pElemRType: type2.pElemRType,
+	}
+	mapiterinit(type2.rtype, *(*unsafe.Pointer)(obj), &mi.hiter)
+	return mi
 }

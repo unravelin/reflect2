@@ -23,6 +23,10 @@ func (type2 *safeMapType) UnsafeMakeMap(cap int) unsafe.Pointer {
 	panic("does not support unsafe operation")
 }
 
+func (type2 *safeMapType) Len(obj interface{}) int {
+	return reflect.ValueOf(obj).Len()
+}
+
 func (type2 *safeMapType) SetIndex(obj interface{}, key interface{}, elem interface{}) {
 	keyVal := reflect.ValueOf(key)
 	elemVal := reflect.ValueOf(elem)
