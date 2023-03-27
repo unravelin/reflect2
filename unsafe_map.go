@@ -61,8 +61,11 @@ func (type2 *UnsafeMapType) MakeMap(cap int) interface{} {
 func makemap(rtype unsafe.Pointer, cap int) (m unsafe.Pointer)
 
 func (type2 *UnsafeMapType) UnsafeMakeMap(cap int) unsafe.Pointer {
-	m := makemap(type2.rtype, cap)
-	return unsafe.Pointer(&m)
+	return makemap(type2.rtype, cap)
+}
+
+func (type2 *UnsafeMapType) UnsafeSet(ptr unsafe.Pointer, val unsafe.Pointer) {
+	*(*unsafe.Pointer)(ptr) = val
 }
 
 func (type2 *UnsafeMapType) SetIndex(obj interface{}, key interface{}, elem interface{}) {
